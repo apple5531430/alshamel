@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.alshamel.mall.mapper.InventoryAdjustmentMapper">
+
+    <insert id="insert" parameterType="com.alshamel.mall.entity.InventoryAdjustment"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO inventory_adjustment
+            (batch_id, reason_id, user_id, old_quantity, new_quantity, quantity_diff, note)
+        VALUES
+            (#{batchId}, #{reasonId}, #{userId}, #{oldQuantity}, #{newQuantity}, #{quantityDiff}, #{note})
+    </insert>
+
+    <sql id="selectColumns">
+        SELECT
+            a.id,
+            a.old_quantity,
+            a.new_quantity,
+            a.quantity_diff,
+            a.note,
+            a.created_at,
+            u.username,
+            b.id       AS batch_id,
+            b.batch_no AS batch_no,
+            b.quantity AS batch_quantity,
+            p.id       AS product_id,
+            p.sku      AS sku,
+            p.name     AS product_name,
+            p.unit     AS unit,
+            w.id       AS warehouse_id,
+            w.code     AS warehouse_code,
+            w.name     AS warehouse_name,
+            w.location AS location,
+            r.id       AS reason_id,
+            r.code     AS reason_code,
+            r.name     AS reason_name
+        FROM inventory_adjustment a
+        JOIN batch b            ON b.id = a.batch_id
+        JOIN product p          ON p.id = b.product_id
+        JOIN warehouse w        ON w.id = b.warehouse_id
+        JOIN adjustment_reason r ON r.id = a.reason_id
+        JOIN users u            ON u.id = a.user_id
+    </sql>
+
+    <resultMap id="adjustmentViewMap" type="com.alshamel.mall.dto.InventoryAdjustmentView">
+        <id column="id" property="id"/>
+        <result column="old_quantity" property="oldQuantity"/>
+        <result column="new_quantity" property="newQuantity"/>
+        <result column="quantity_diff" property="quantityDiff"/>
+        <result column="note" property="note"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="username" property="adjustedBy"/>
+        <association property="batch" javaType="com.alshamel.mall.dto.InventoryAdjustmentView$BatchInfo">
+            <id column="batch_id" property="id"/>
+            <result column="batch_no" property="batchNo"/>
+            <result column="batch_quantity" property="quantity"/>
+            <association property="product" javaType="com.alshamel.mall.dto.InventoryAdjustmentView$ProductInfo">
+                <id column="product_id" property="id"/>
+                <result column="sku" property="sku"/>
+                <result column="product_name" property="name"/>
+                <result column="unit" property="unit"/>
+            </association>
+            <association property="warehouse" javaType="com.alshamel.mall.dto.InventoryAdjustmentView$WarehouseInfo">
+                <id column="warehouse_id" property="id"/>
+                <result column="warehouse_code" property="code"/>
+                <result column="warehouse_name" property="name"/>
+                <result column="location" property="location"/>
+            </association>
+        </association>
+        <association property="reason" javaType="com.alshamel.mall.dto.InventoryAdjustmentView$ReasonInfo">
+            <id column="reason_id" property="id"/>
+            <result column="reason_code" property="code"/>
+            <result column="reason_name" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="selectWithDetailsById" resultMap="adjustmentViewMap">
+        <include refid="selectColumns"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="selectAllWithDetails" resultMap="adjustmentViewMap">
+        <include refid="selectColumns"/>
+        ORDER BY a.id DESC
+    </select>
+
+</mapper>
