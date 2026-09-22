@@ -40,7 +40,7 @@ src/main/resources/
 
 ## 快速开始
 
-1. **准备 MySQL 8**，确认账号密码（默认 `root`/`root`，可在 `application.yml` 中修改）。
+1. **准备 MySQL 8**，确认账号密码（默认 `root`/`123456`，可在 `application.yml` 中修改）。
    - 启动时 `createDatabaseIfNotExist=true` 会自动创建 `alshamel` 库（需账号有建库权限）。
 
 2. **建表与演示数据**
